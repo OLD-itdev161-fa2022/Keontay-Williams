@@ -8,13 +8,11 @@ import config from 'config';
 import User from './models/User';
 import auth from './middleware/auth';
 
-// Initialize express application
+
 const app = express();
 
-// Connect database
 connectDatabase();
 
-// Configure Middleware
 app.use(express.json({ extended: false }));
 app.use(
   cors({
@@ -22,21 +20,12 @@ app.use(
   })
 );
 
-// API endpoints
-/**
- * @route GET /
- * @desc Test endpoint
- */
 app.get('/', (req, res) =>
   res.send('http get request sent to root api endpoint')
 );
 
 app.get('/api/', (req, res) => res.send('http get request sent to api'));
 
-/**
- * @route POST api/users
- * @desc Register user
- */
 app.post(
   '/api/users',
   [
@@ -56,7 +45,7 @@ app.post(
     } else {
       const { name, email, password } = req.body;
       try {
-        // Check if user exists
+
         let user = await User.findOne({ email: email });
         if (user) {
           return res
@@ -64,21 +53,17 @@ app.post(
             .json({ errors: [{ msg: 'User already exists' }] });
         }
 
-        // Create a new user
         user = new User({
           name: name,
           email: email,
           password: password
         });
 
-        // Encrypt the password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
 
-        // Save to the db and return
         await user.save();
 
-        // Generate and return a JWT token
         returnToken(user, res);
       } catch (error) {
         res.status(500).send('Server error');
@@ -87,10 +72,6 @@ app.post(
   }
 );
 
-/**
- * @route GET api/auth
- * @desc Authorize user
- */
 app.get('/api/auth', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -100,10 +81,6 @@ app.get('/api/auth', auth, async (req, res) => {
   }
 });
 
-/**
- * @route POST api/login
- * @desc Login user
- */
 app.post(
   '/api/login',
   [
@@ -117,7 +94,7 @@ app.post(
     } else {
       const { email, password } = req.body;
       try {
-        // Check if user exists
+
         let user = await User.findOne({ email: email });
         if (!user) {
           return res
@@ -125,7 +102,6 @@ app.post(
             .json({ errors: [{ message: 'Invalid email or password' }] });
         }
 
-        // Check password
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
           return res
@@ -133,7 +109,6 @@ app.post(
             .json({ errors: [{ message: 'Invalid email or password' }] });
         }
 
-        // Generate and return a JWT token
         returnToken(user, res);
       } catch (error) {
         res.status(500).send('Server error');
@@ -160,6 +135,5 @@ const returnToken = (user, res) => {
   );
 };
 
-// Connection listener
 const port = 5000;
 app.listen(port, () => console.log(`Express server running on port ${port}`));
