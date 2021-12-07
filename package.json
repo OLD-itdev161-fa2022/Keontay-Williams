@@ -27,7 +27,8 @@
         "esm": "^3.2.25",
         "express": "^4.17.1",
         "express-validator": "^6.12.1",
-        "mongoose": "^6.0.6"
+        "mongoose": "^6.0.6",
+        "slugify": "^1.6.3"
     },
     "devDependencies": {
         "concurrently": "^6.4.0",
