@@ -1,14 +1,18 @@
 import React, { useState } from 'react'
 import axios from 'axios';
-import { register } from '../../serviceWorker';
+import { useHistory } from 'react-router-dom';
 
-const Register = () => {
+const Register = ({ authenticateUser}) => {
     const [userData, setUserData] = useState({
         name: '',
         email: '',
         password: '',
         passwordConfirm: ''
     });
+    const [errorData, setErrorData] = useState({ errors: null });
+
+    const { name, emial, password, passwordConfirm } = userData;
+    const { errors } = errorData;
 
     const { name, email, password, passwordConfirm } = userData;
 
@@ -40,11 +44,20 @@ const Register = () => {
 
                 const body = JSON.stringify(newUser);
                 const res = await axios.post('http://localhost:5000/api/users', body, config);
+
+                localStorage.setItem('token', res.data.token);
+                history.pushState('/');
                 console.log(res.data);
             } catch (error) {
-                console.error(error.response.data);
-                return;
+                localStorage.removeItem('token');
+
+                setErrorData({
+                    ...errors,
+                    errors: error.response.data.errors
+                })
+         
             }
+            authenticateUser();
         }
     }
 
@@ -89,6 +102,11 @@ return (
     </div>
     <div>
         <button onClick={() => register()}>Register</button>
+    </div>
+    
+    <div>
+        {errors && errors.map(error =>
+            <div key={error.msg}>{error.msg}</div>)}
     </div>
     </div>
 )
